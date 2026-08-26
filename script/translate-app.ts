@@ -13,65 +13,6 @@ type Locale = Exclude<DesktopNativeLocale, "en">
 const locales = DESKTOP_NATIVE_LOCALES.filter((locale): locale is Locale => locale !== "en")
 
 const languages = {
-  ar: "Arabic",
-  br: "Brazilian Portuguese",
-  bs: "Bosnian",
-  da: "Danish",
-  de: "German",
-  es: "Spanish",
-  fr: "French",
-  ja: "Japanese",
-  ko: "Korean",
-  no: "Norwegian Bokmal",
-  pl: "Polish",
-  ru: "Russian",
-  uk: "Ukrainian",
-  th: "Thai",
-  tr: "Turkish",
-  hi: "Hindi",
-  nl: "Dutch",
-  id: "Indonesian",
-  vi: "Vietnamese",
-  it: "Italian",
-  ur: "Urdu",
-  pa: "Punjabi (Shahmukhi)",
-  az: "Azerbaijani (Latin)",
-  fi: "Finnish",
-  sv: "Swedish",
-  am: "Amharic",
-  bg: "Bulgarian",
-  bn: "Bengali",
-  ca: "Catalan",
-  cs: "Czech",
-  dv: "Dhivehi",
-  dz: "Dzongkha",
-  el: "Greek",
-  et: "Estonian",
-  fa: "Persian",
-  fo: "Faroese",
-  hr: "Croatian",
-  hu: "Hungarian",
-  hy: "Armenian",
-  is: "Icelandic",
-  ka: "Georgian",
-  km: "Khmer",
-  lo: "Lao",
-  lt: "Lithuanian",
-  lv: "Latvian",
-  mk: "Macedonian",
-  mn: "Mongolian (Cyrillic)",
-  ms: "Malay",
-  my: "Burmese",
-  ne: "Nepali",
-  ro: "Romanian",
-  si: "Sinhala",
-  sk: "Slovak",
-  sl: "Slovenian",
-  sq: "Albanian",
-  sr: "Serbian (Cyrillic)",
-  tg: "Tajik",
-  tk: "Turkmen",
-  uz: "Uzbek (Latin)",
   zh: "Simplified Chinese",
   zht: "Traditional Chinese",
 } as const satisfies Record<Locale, string>
@@ -261,7 +202,8 @@ Options:
   -h, --help                 Show this help message
 
 Examples:
-  bun run translate:app -- fr
+  bun run translate:app -- zh
+  bun run translate:app -- zht
   bun run translate:app -- all --concurrency 4
 `)
     return

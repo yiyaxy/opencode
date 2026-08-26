@@ -1,9 +1,9 @@
 ---
-description: translate English to other languages
+description: translate English to Chinese
 model: opencode/gpt-5.6-sol
 ---
 
-run git diff and translate changed english doc and UI copy files to other international languages. Translate all languages in parallel to save time.
+run git diff and translate changed English doc and UI copy files to Simplified Chinese and Traditional Chinese.
 
 Requirements:
 
