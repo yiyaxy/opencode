@@ -386,7 +386,7 @@ https://github.com/yiyaxy/opencode
 | `origin` | `https://github.com/yiyaxy/opencode.git` | 个人公开 Fork、开发和发布 | 允许推送 |
 | `upstream` | `https://github.com/anomalyco/opencode.git` | 获取上游修复和新功能 | 只拉取 |
 
-当前本地远程已经调整为上述结构；尚未向 Fork 推送当前独立快照分支。
+当前本地远程已经调整为上述结构；迁移分支已推送到 Fork，尚未覆盖 Fork 的 `dev`。
 
 ### 10.3 当前仓库风险
 
@@ -439,8 +439,9 @@ https://github.com/yiyaxy/opencode
 - 已完成：Fork `yiyaxy/opencode` 已创建。
 - 已完成：本地 `origin` 已指向个人 Fork。
 - 已完成：本地 `upstream` 已指向官方仓库。
-- 待办：从标准上游历史迁移当前独立快照变更。
-- 待办：迁移完成后向 Fork 推送 `dev` 和必要功能分支。
+- 已完成：基于 Fork `dev` 的 `fork-migration` 已推送。
+- 已完成：当前语言清理和产品 Plan 已迁移到标准 Fork 历史。
+- 待办：通过 PR 将迁移分支合并到 Fork 的 `dev`。
 - 待办：开启分支保护、Dependabot、Secret Scanning 和必要的代码扫描。
 
 ## 11. 当前实施状态
@@ -449,8 +450,8 @@ https://github.com/yiyaxy/opencode
 | --- | --- | --- |
 | 产品路线 A → B → C | 已确认 | 一个产品分层递进，不同时拼装三个产品 |
 | Git 清理前基线 | 已完成 | 基线提交：`ac7c164` |
-| 工作分支 | 已完成 | 当前分支：`internal-cleanup` |
-| Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；`upstream` 指向官方仓库，尚未向 Fork 推送当前独立快照 |
+| 工作分支 | 已完成 | 当前分支：`fork-migration`；`internal-cleanup` 保留为本地备份 |
+| Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；迁移分支已推送，尚未覆盖 Fork `dev` |
 | 三语言清理 | 已完成 | 提交：`0423d4c`，删除 766 个无关语言文件 |
 | 静态校验 | 已通过 | 已完成差异、语言目录、配置和相关语法检查 |
 | Bun 类型检查、构建和测试 | 未执行 | 当前环境未安装 Bun |
