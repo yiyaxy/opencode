@@ -133,7 +133,7 @@ export function tag(locale: Locale) {
 }
 
 export function dir(locale: Locale) {
-  return "ltr"
+  return "ltr" as const
 }
 
 function match(input: string): Locale | null {

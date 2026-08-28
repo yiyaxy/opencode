@@ -454,7 +454,7 @@ https://github.com/yiyaxy/opencode
 | Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；迁移分支已推送，尚未覆盖 Fork `dev` |
 | 三语言清理 | 已完成 | 提交：`0423d4c`，删除 766 个无关语言文件 |
 | 静态校验 | 已通过 | 已完成差异、语言目录、配置和相关语法检查 |
-| Bun 类型检查、构建和测试 | 部分完成 | Bun 已安装；13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建已通过；根级 pre-push 仍被隔离的 console/stats 类型错误阻断；未新增或运行测试 |
+| Bun 类型检查、构建和测试 | 部分完成 | Bun 已安装；根级 `bun typecheck`（30/30 任务）、13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建已通过；未新增或运行测试 |
 | 模块复用审计 | 已完成 | 清单见 [module-audit.md](./module-audit.md)，暂无新增目录级删除项 |
 | 外部端点审计 | 已完成 | 清单见 [external-endpoints.md](./external-endpoints.md)，未修改生产端点或敏感配置 |
 | A 层内部化 | 计划中 | 外部端点、品牌、模型网关、安装更新待处理 |
@@ -477,5 +477,5 @@ https://github.com/yiyaxy/opencode
 2. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
 3. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
 4. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
-5. 解决或明确隔离 `console/stats` 的根级 pre-push 类型检查策略；不将其错误混入 A 层业务改动。
+5. 保持根级 pre-push 类型检查可通过；隔离包的类型错误应单独修复，不将其混入 A 层业务改动。
 6. 进入 M1，先交付完整、可靠、安全的内部编程助手闭环。
