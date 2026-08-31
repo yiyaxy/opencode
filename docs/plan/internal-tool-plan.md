@@ -173,7 +173,7 @@ flowchart TD
 
 ### M0：代码基线与产品收敛
 
-状态：**M0 基线、语言清理、模块审计和外部端点清单已完成；待内部品牌与网关决策**。
+状态：**M0 基线、语言清理、模块审计、端点清单和上游同步已完成；待内部品牌与网关决策**。
 
 目标：建立可持续二次开发的干净基线，不破坏未来 B/C 能力。
 
@@ -183,7 +183,7 @@ flowchart TD
 - 仅保留英文、简体中文、繁体中文。
 - 完成模块依赖、资源引用和未来复用价值审计，详见 [M0 模块审计清单](./module-audit.md)。
 - 建立外部域名、遥测、更新、安装和云服务端点清单，详见 [M0 外部端点清单](./external-endpoints.md)。
-- 安装并锁定 Bun 工具链，完成现有类型检查、测试和构建基线。
+- 安装 Bun 工具链并完成现有类型检查和构建基线；Bun 版本锁定仍待处理，既有测试未运行。
 - 确认内部品牌、包名、应用 ID、数据目录和更新通道。
 
 退出条件：
@@ -404,6 +404,8 @@ https://github.com/yiyaxy/opencode
 6. 在迁移分支完成类型检查、既有测试、构建和静态安全检查。
 7. 通过 PR 合并到 Fork 的 `dev`，再设置 `dev` 为默认分支。
 
+当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。
+
 迁移会产生新的提交哈希；以共同上游基点、文件内容和可审查的逻辑提交为准，不强行保留当前临时提交哈希。
 
 ### 10.5 分支与同步策略
@@ -441,7 +443,8 @@ https://github.com/yiyaxy/opencode
 - 已完成：本地 `upstream` 已指向官方仓库。
 - 已完成：基于 Fork `dev` 的 `fork-migration` 已推送。
 - 已完成：当前语言清理和产品 Plan 已迁移到标准 Fork 历史。
-- 待办：通过 PR 将迁移分支合并到 Fork 的 `dev`。
+- 已完成：`upstream-sync` 已同步上游 `dev`，并保留三语言删除策略。
+- 待办：推送 `upstream-sync` 并通过 PR 合并到 Fork 的 `dev`。
 - 待办：开启分支保护、Dependabot、Secret Scanning 和必要的代码扫描。
 
 ## 11. 当前实施状态
@@ -450,13 +453,15 @@ https://github.com/yiyaxy/opencode
 | --- | --- | --- |
 | 产品路线 A → B → C | 已确认 | 一个产品分层递进，不同时拼装三个产品 |
 | Git 清理前基线 | 已完成 | 基线提交：`ac7c164` |
-| 工作分支 | 已完成 | 当前分支：`fork-migration`；`internal-cleanup` 保留为本地备份 |
+| 工作分支 | 已完成 | 当前分支：`upstream-sync`；`fork-migration` 保留为已推送迁移分支，`internal-cleanup` 保留为本地备份 |
 | Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；迁移分支已推送，尚未覆盖 Fork `dev` |
-| 三语言清理 | 已完成 | 提交：`0423d4c`，删除 766 个无关语言文件 |
+| 三语言清理 | 已完成 | 迁移提交：`68819552`，删除 766 个无关语言文件 |
 | 静态校验 | 已通过 | 已完成差异、语言目录、配置和相关语法检查 |
-| Bun 类型检查、构建和测试 | 部分完成 | Bun 已安装；根级 `bun typecheck`（30/30 任务）、13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建已通过；未新增或运行测试 |
+| Bun 类型检查、构建和测试 | 部分完成 | 上游同步后根级 `bun typecheck`（30/30 任务）、13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建均通过；Bun 仍为 1.4.0、项目声明 1.3.14；未新增或运行测试 |
+| Desktop 开发构建 | 已通过 | `bun run build` 已通过；开发渠道优先使用本地/源码 CLI，避免下载未发布的 `0.0.0-next-16350` |
 | 模块复用审计 | 已完成 | 清单见 [module-audit.md](./module-audit.md)，暂无新增目录级删除项 |
 | 外部端点审计 | 已完成 | 清单见 [external-endpoints.md](./external-endpoints.md)，未修改生产端点或敏感配置 |
+| 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，待推送同步分支 |
 | A 层内部化 | 计划中 | 外部端点、品牌、模型网关、安装更新待处理 |
 | A 层生产加固 | 计划中 | 沙箱、SSO、审计、恢复和评测待建设 |
 | B 层复杂任务 | 规划中 | 等 A 层达到发布门槛后实施 |
@@ -473,9 +478,9 @@ https://github.com/yiyaxy/opencode
 
 ## 13. 下一步
 
-1. 通过 PR 将 `fork-migration` 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
-2. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
-3. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
-4. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
-5. 保持根级 pre-push 类型检查可通过；隔离包的类型错误应单独修复，不将其混入 A 层业务改动。
-6. 进入 M1，先交付完整、可靠、安全的内部编程助手闭环。
+1. 推送 `upstream-sync`，通过 PR 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
+2. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，并补跑既有核心测试基线。
+3. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
+4. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
+5. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
+6. 进入 M1，先交付 Desktop/Web/CLI 共用模型配置和完整、可靠、安全的内部编程助手闭环。
