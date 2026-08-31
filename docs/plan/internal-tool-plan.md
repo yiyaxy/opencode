@@ -405,7 +405,7 @@ https://github.com/yiyaxy/opencode
 6. 在迁移分支完成类型检查、既有测试、构建和静态安全检查。
 7. 通过 PR 合并到 Fork 的 `dev`，再设置 `dev` 为默认分支。
 
-当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。同步分支已推送至 Fork，最新计划提交为 `ab6d1b0e1`；待通过 PR 合并到 Fork 的 `dev`。
+当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。同步分支已推送至 Fork，最新计划提交为 `6e94f0cc6`；待通过 PR 合并到 Fork 的 `dev`。
 
 迁移会产生新的提交哈希；以共同上游基点、文件内容和可审查的逻辑提交为准，不强行保留当前临时提交哈希。
 
