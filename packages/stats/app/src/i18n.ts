@@ -1,19 +1,4 @@
 import { type Locale } from "./lib/language"
-import { dict as ar } from "./i18n/ar"
-import { dict as br } from "./i18n/br"
-import { dict as da } from "./i18n/da"
-import { dict as de } from "./i18n/de"
-import { dict as es } from "./i18n/es"
-import { dict as fr } from "./i18n/fr"
-import { dict as it } from "./i18n/it"
-import { dict as ja } from "./i18n/ja"
-import { dict as ko } from "./i18n/ko"
-import { dict as no } from "./i18n/no"
-import { dict as pl } from "./i18n/pl"
-import { dict as ru } from "./i18n/ru"
-import { dict as th } from "./i18n/th"
-import { dict as tr } from "./i18n/tr"
-import { dict as uk } from "./i18n/uk"
 import { dict as zh } from "./i18n/zh"
 import { dict as zht } from "./i18n/zht"
 
@@ -126,12 +111,9 @@ const en = {
   "home.noMarketDescription": "No model rows matched this range.",
   "home.marketChart": "Market share by model author",
   "home.noData": "No data",
-  "home.geoTitle": "Geo Breakdown",
-  "home.geoDescription": "Tokens used by country.",
+  "home.geoTitle": "Geographic Breakdown",
   "home.noGeoTitle": "No geo data",
   "home.noGeoDescription": "No geo rows matched this range.",
-  "home.worldMap": "World map of token usage by country",
-  "home.geoMapTitle": "Geo Breakdown map",
   "home.unknown": "Unknown",
   "home.tokenCostTitle": "Token Cost",
   "home.tokenCostDescription": "Price per 1M tokens.",
@@ -236,10 +218,8 @@ const en = {
   "model.averageTokensSession": "Average tokens / session",
   "model.cacheRatio": "Cache Ratio",
   "model.inputTokens": "input tokens",
-  "model.geoDescription": "OpenCode model tokens used by country.",
   "model.noGeoTitle": "No geo data",
   "model.noGeoDescription": "No OpenCode geo rows matched this model.",
-  "model.worldMap": "World map of model token usage by country",
   "model.peersDescription": "Nearby models by recent OpenCode token volume.",
   "model.noPeersTitle": "No peers",
   "model.noPeersDescription": "Peer rankings appear after usage lands.",
@@ -256,22 +236,7 @@ export type Key = keyof typeof en
 export type Dict = Record<Key, string>
 
 const dictionaries = {
-  ar,
-  br,
-  da,
-  de,
   en,
-  es,
-  fr,
-  it,
-  ja,
-  ko,
-  no,
-  pl,
-  ru,
-  th,
-  tr,
-  uk,
   zh,
   zht,
 } satisfies Record<Locale, Dict>

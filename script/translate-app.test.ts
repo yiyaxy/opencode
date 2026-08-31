@@ -15,8 +15,8 @@ import {
 
 describe("translate app", () => {
   test("parses one locale with the public model defaults", () => {
-    expect(parseTranslationArgs(["fr"])).toEqual({
-      target: "fr",
+    expect(parseTranslationArgs(["zh"])).toEqual({
+      target: "zh",
       concurrency: 1,
       model: "opencode/gpt-5.5",
       variant: "xhigh",
@@ -51,34 +51,28 @@ describe("translate app", () => {
 
   test("rejects unsupported targets and invalid concurrency", () => {
     expect(() => parseTranslationArgs(["en"])).toThrow("Unknown locale")
-    expect(() => parseTranslationArgs(["fr", "de"])).toThrow("one locale")
+    expect(() => parseTranslationArgs(["zh", "zht"])).toThrow("one locale")
     expect(() => parseTranslationArgs(["all", "--concurrency", "0"])).toThrow("positive integer")
   })
 
   test("parses fresh-process parity checks without requesting translation", () => {
-    expect(parseTranslationArgs(["fr", "--check"]).check).toBe(true)
+    expect(parseTranslationArgs(["zh", "--check"]).check).toBe(true)
   })
 
   test("limits each locale to its app surfaces", () => {
-    expect(targetFiles("fr")).toEqual([
-      "packages/app/src/i18n/fr.ts",
-      "packages/ui/src/i18n/fr.ts",
-      "packages/desktop/src/renderer/i18n/fr.ts",
+    expect(targetFiles("zh")).toEqual([
+      "packages/app/src/i18n/zh.ts",
+      "packages/ui/src/i18n/zh.ts",
+      "packages/desktop/src/renderer/i18n/zh.ts",
     ])
-    expect(targetFiles("tr")).toEqual([
-      "packages/app/src/i18n/tr.ts",
-      "packages/ui/src/i18n/tr.ts",
-      "packages/desktop/src/renderer/i18n/tr.ts",
-    ])
-    expect(targetFiles("dv")).toEqual([
-      "packages/app/src/i18n/dv.ts",
-      "packages/ui/src/i18n/dv.ts",
-      "packages/desktop/src/renderer/i18n/dv.ts",
+    expect(targetFiles("zht")).toEqual([
+      "packages/app/src/i18n/zht.ts",
+      "packages/ui/src/i18n/zht.ts",
+      "packages/desktop/src/renderer/i18n/zht.ts",
     ])
   })
 
   test("maps product locale codes to their glossaries", () => {
-    expect(glossaryFile("fr")).toBe(".opencode/glossary/fr.md")
     expect(glossaryFile("zh")).toBe(".opencode/glossary/zh-cn.md")
     expect(glossaryFile("zht")).toBe(".opencode/glossary/zh-tw.md")
   })
@@ -90,48 +84,6 @@ describe("translate app", () => {
         { keep: "Bonjour {{name}}", extra: "Extra", changed: "{{one}}" },
       ),
     ).toEqual({ missing: ["missing"], extra: ["extra"], placeholders: ["changed"] })
-  })
-
-  test("accepts locale-specific CLDR plural variants", () => {
-    expect(
-      findDrift(
-        { "files.one": "{{count}} file", "files.other": "{{count}} files" },
-        {
-          "files.one": "{{count}} ملف",
-          "files.two": "ملفان: {{count}}",
-          "files.few": "{{count}} ملفات",
-          "files.many": "{{count}} ملفًا",
-          "files.zero": "{{count}} ملف",
-          "files.other": "{{count}} ملف",
-        },
-        "ar",
-      ),
-    ).toEqual({ missing: [], extra: [], placeholders: [] })
-  })
-
-  test("reports missing locale-specific CLDR plural variants", () => {
-    const drift = findDrift(
-      { "files.one": "{{count}} file", "files.other": "{{count}} files" },
-      { "files.one": "{{count}} ملف", "files.other": "{{count}} ملف" },
-      "ar",
-    )
-    expect(drift.missing).toContain("files.few")
-  })
-
-  test("reports placeholder drift in locale-specific CLDR plural variants", () => {
-    const drift = findDrift(
-      { "files.one": "{{count}} file", "files.other": "{{count}} files" },
-      {
-        "files.one": "{{count}} ملف",
-        "files.two": "ملفان: {{count}}",
-        "files.few": "{{count}} ملفات",
-        "files.many": "ملفات كثيرة",
-        "files.zero": "{{count}} ملف",
-        "files.other": "{{count}} ملف",
-      },
-      "ar",
-    )
-    expect(drift.placeholders).toContain("files.many")
   })
 
   test("runs work with the requested maximum concurrency", async () => {
@@ -190,15 +142,15 @@ opencode/next
   })
 
   test("disables side effects and scopes edits for the translation agent", () => {
-    const config = translationConfig("translate-app-fr", "opencode/gpt-5.5", ["packages/app/src/i18n/fr.ts"])
+    const config = translationConfig("translate-app-zh", "opencode/gpt-5.5", ["packages/app/src/i18n/zh.ts"])
     expect(config.share).toBe("disabled")
     expect(config.formatter).toBe(false)
     expect(config.lsp).toBe(false)
-    expect(config.agent["translate-app-fr"].permission.webfetch).toBe("allow")
-    expect(config.agent["translate-app-fr"].permission.websearch).toBe("allow")
-    expect(config.agent["translate-app-fr"].permission.edit).toEqual({
+    expect(config.agent["translate-app-zh"].permission.webfetch).toBe("allow")
+    expect(config.agent["translate-app-zh"].permission.websearch).toBe("allow")
+    expect(config.agent["translate-app-zh"].permission.edit).toEqual({
       "*": "deny",
-      "packages/app/src/i18n/fr.ts": "allow",
+      "packages/app/src/i18n/zh.ts": "allow",
     })
   })
 
@@ -208,10 +160,10 @@ opencode/next
         { "script/translate-app.ts": "before" },
         {
           "script/translate-app.ts": "before",
-          "packages/app/src/i18n/fr.ts": "translated",
+          "packages/app/src/i18n/zh.ts": "translated",
           "packages/app/src/app.tsx": "unexpected",
         },
-        ["packages/app/src/i18n/fr.ts"],
+        ["packages/app/src/i18n/zh.ts"],
       ),
     ).toEqual(["packages/app/src/app.tsx"])
     expect(unexpectedChanges({ "already-dirty.ts": "before" }, { "already-dirty.ts": "after" }, [])).toEqual([

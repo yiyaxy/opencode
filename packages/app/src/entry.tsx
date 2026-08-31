@@ -8,6 +8,7 @@ import { type Platform, PlatformProvider } from "@/context/platform"
 import { createBrowserDraftStore } from "@/utils/draft-store"
 import { dict as en } from "@/i18n/en"
 import { dict as zh } from "@/i18n/zh"
+import { dict as zht } from "@/i18n/zht"
 import { authFromToken } from "@/utils/server"
 import pkg from "../package.json"
 import { ServerConnection } from "./context/server"
@@ -19,7 +20,11 @@ const getLocale = () => {
   const languages = navigator.languages?.length ? navigator.languages : [navigator.language]
   for (const language of languages) {
     if (!language) continue
-    if (language.toLowerCase().startsWith("zh")) return "zh" as const
+    const value = language.toLowerCase()
+    if (value.startsWith("zh") && ["hant", "-tw", "-hk", "-mo"].some((part) => value.includes(part))) {
+      return "zht" as const
+    }
+    if (value.startsWith("zh")) return "zh" as const
   }
   return "en" as const
 }
@@ -27,7 +32,9 @@ const getLocale = () => {
 const getRootNotFoundError = () => {
   const key = "error.dev.rootNotFound" as const
   const locale = getLocale()
-  return locale === "zh" ? (zh[key] ?? en[key]) : en[key]
+  if (locale === "zh") return zh[key] ?? en[key]
+  if (locale === "zht") return zht[key] ?? en[key]
+  return en[key]
 }
 
 const getStorage = (key: string) => {
