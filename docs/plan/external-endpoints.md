@@ -18,7 +18,7 @@
 | 端点或来源 | 发现位置 | 用途 | M1 动作 | 分类 |
 | --- | --- | --- | --- | --- |
 | `OPENCODE_MODELS_URL`，默认 `https://models.opencode.ai` | `packages/core/src/models-dev.ts`、`packages/cli/script/generate.ts` | 模型目录和 Provider 元数据 | 统一为内部模型目录；保留显式环境变量覆盖；明确离线缓存策略 | 内部化 |
-| `OPENCODE_MODELS_URL`，脚本默认 `https://models.dev` | `packages/opencode/script/generate.ts` | 生成模型快照 | 与运行时默认值统一，避免生成结果和运行时目录不一致 | 内部化 |
+| `OPENCODE_MODELS_URL`，脚本默认 `https://models.opencode.ai` | `packages/opencode/script/generate.ts` | 生成模型快照 | 已与运行时默认值统一；内部地址确认后通过同一环境变量切换 | 内部化 |
 | `https://opencode.ai/console` | `packages/core/src/plugin/provider/opencode.ts` | OpenCode Provider 设备授权和 OAuth | 公司网关确定前不启用；改为可配置 Provider 或从 A 层默认列表移除 | 内部化 |
 | `https://api.opencode.ai` | `packages/opencode/src/cli/cmd/github.handler.ts` | GitHub Agent 安装信息和相关 API | A 层默认关闭；若保留，迁移到内部 GitHub App 服务并增加策略开关 | 内部化 |
 | `https://app.opencode.ai` | `packages/opencode/src/server/shared/ui.ts` | 服务端代理 Web UI | Desktop 使用本地打包 UI；远程 UI 改为内部静态资源或明确的受控地址 | 内部化 |
@@ -83,4 +83,4 @@
 3. M1 首先处理模型目录、公共 Provider、安装更新、分享和 Referer；遥测与 SSO 随 M2 安全加固落地。
 4. 每次替换端点必须同时补充：配置来源、网络策略、数据字段、超时/重试、离线行为、回滚方式和验收记录。
 
-M1 已完成一项低风险内部化：运行时 Agent 提示不再强制访问 `opencode.ai` 文档或公共 GitHub 反馈入口。模型目录、Provider、安装更新、分享和 Referer 仍等待公司地址与策略确认后处理。
+M1 已完成两项低风险内部化准备：运行时 Agent 提示不再强制访问 `opencode.ai` 文档或公共 GitHub 反馈入口；模型目录构建期与运行时已统一使用 `https://models.opencode.ai` 默认值，并保留 `OPENCODE_MODELS_URL`/本地快照覆盖。Provider、安装更新、分享和 Referer 仍等待公司地址与策略确认后处理。
