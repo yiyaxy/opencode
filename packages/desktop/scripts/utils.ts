@@ -1,9 +1,6 @@
 import { $ } from "bun"
-import { chmod, copyFile, mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { chmod, copyFile } from "node:fs/promises"
 import { join } from "node:path"
-
-const CLI_VERSION = "0.0.0-next-16350"
 
 export type Channel = "dev" | "beta" | "prod"
 
@@ -71,17 +68,15 @@ export function getCurrentCli(target = RUST_TARGET ?? nativeTarget()) {
 
 export async function downloadCliToResources() {
   const cli = getCurrentCli()
-  const directory = await mkdtemp(join(tmpdir(), "opencode-cli-"))
   const dest = windowsify("resources/opencode-cli")
-  try {
-    await $`bun install --no-save --cwd ${directory} ${`${cli.package}@${CLI_VERSION}`} ${`--os=${cli.os}`} ${`--cpu=${cli.cpu}`}`
-    await copyFile(
-      join(directory, "node_modules", cli.package, "bin", cli.os === "win32" ? "opencode2.exe" : "opencode2"),
-      dest,
-    )
-  } finally {
-    await rm(directory, { recursive: true, force: true })
+  const configured = Bun.env.OPENCODE_DESKTOP_CLI_PATH
+  const local = configured ?? (await findLocalCli(cli))
+  if (!local && !configured) {
+    await $`cd ../cli && bun script/build.ts --single --skip-install`
   }
+  const source = configured ?? (await findLocalCli(cli))
+  if (!source) throw new Error("无法找到本地 CLI，请检查 packages/cli 构建结果")
+  await copyFile(source, dest)
   if (process.platform !== "win32") await chmod(dest, 0o755)
   if (process.platform === "win32" && process.env.GITHUB_ACTIONS === "true") {
     await $`pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File ../../script/sign-windows.ps1 ${dest}`
@@ -89,6 +84,21 @@ export async function downloadCliToResources() {
   if (process.platform === "darwin") await $`codesign --force --sign - ${dest}`
 
   console.log(`Copied ${cli.package} to ${dest}`)
+}
+
+async function findLocalCli(cli: (typeof CLI_BINARIES)[number]) {
+  const packageName = cli.package.slice("@opencode-ai/".length)
+  const packageNames = packageName.endsWith("-baseline")
+    ? [packageName, packageName.slice(0, -"-baseline".length)]
+    : [packageName]
+  const candidates = packageNames.map((name) =>
+    join(import.meta.dir, "../../cli/dist", name, "bin", cli.os === "win32" ? "lildax.exe" : "lildax"),
+  )
+  return (
+    await Promise.all(
+      candidates.map(async (candidate) => ((await Bun.file(candidate).exists()) ? candidate : undefined)),
+    )
+  ).find((candidate) => candidate !== undefined)
 }
 
 export function windowsify(path: string) {
