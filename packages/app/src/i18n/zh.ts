@@ -1049,7 +1049,11 @@ export const dict = {
   "settings.providers.tag.other": "其他",
 
   "settings.models.title": "模型",
-  "settings.models.description": "可在此处配置模型设置。",
+  "settings.models.description": "配置模型显示和此服务器的默认模型。",
+  "settings.models.default": "默认",
+  "settings.models.setDefault": "设为默认",
+  "settings.models.defaultUpdated": "默认模型已更新",
+  "settings.models.defaultUpdateFailed": "更新默认模型失败",
 
   "settings.agents.title": "智能体",
   "settings.agents.description": "可在此处配置智能体设置。",

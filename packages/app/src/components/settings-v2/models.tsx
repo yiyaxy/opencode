@@ -1,15 +1,18 @@
+import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
 import { useFilteredList } from "@opencode-ai/ui/hooks"
 import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { Switch } from "@opencode-ai/ui/v2/switch-v2"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
 import { TextInputV2 } from "@opencode-ai/ui/v2/text-input-v2"
-import { type Component, For, Show } from "solid-js"
+import { createSignal, type Component, For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useLanguage } from "@/context/language"
 import { useModels } from "@/context/models"
 import { useServerSDK } from "@/context/server-sdk"
+import { useServerSync } from "@/context/server-sync"
 import { popularProviders } from "@/hooks/use-providers"
+import { showToast } from "@/utils/toast"
 import { Persist, persisted } from "@/utils/persist"
 import { SettingsListV2 } from "./parts/list"
 import { SettingsRowV2 } from "./parts/row"
@@ -23,6 +26,8 @@ export const SettingsModelsV2: Component = () => {
   const language = useLanguage()
   const models = useModels()
   const serverSdk = useServerSDK()
+  const serverSync = useServerSync()
+  const [pendingDefault, setPendingDefault] = createSignal<string>()
   const [store, setStore] = persisted(
     Persist.serverGlobal(serverSdk().scope, "settings-v2.models.providers"),
     createStore({ collapsed: {} as Record<string, boolean> }),
@@ -49,6 +54,41 @@ export const SettingsModelsV2: Component = () => {
       return aName.localeCompare(bName)
     },
   })
+
+  const configuredDefault = () => {
+    const value = serverSync().data.config.model
+    if (!value) return undefined
+    const separator = value.indexOf("/")
+    if (separator <= 0 || separator === value.length - 1) return undefined
+    return { providerID: value.slice(0, separator), modelID: value.slice(separator + 1) }
+  }
+
+  const modelKey = (model: { providerID: string; modelID: string }) => `${model.providerID}:${model.modelID}`
+
+  const setDefault = async (model: { providerID: string; modelID: string }) => {
+    const next = `${model.providerID}/${model.modelID}`
+    const before = serverSync().data.config.model
+    if (before === next) return
+
+    setPendingDefault(modelKey(model))
+    serverSync().set("config", "model", next)
+    try {
+      await serverSync().updateConfig({ model: next })
+      showToast({
+        variant: "success",
+        icon: "circle-check",
+        title: language.t("settings.models.defaultUpdated"),
+      })
+    } catch (error) {
+      serverSync().set("config", "model", before)
+      showToast({
+        title: language.t("settings.models.defaultUpdateFailed"),
+        description: error instanceof Error ? error.message : String(error),
+      })
+    } finally {
+      setPendingDefault(undefined)
+    }
+  }
 
   return (
     <>
@@ -156,9 +196,23 @@ export const SettingsModelsV2: Component = () => {
                         <For each={group.items}>
                           {(item) => {
                             const key = { providerID: item.provider.id, modelID: item.id }
+                            const isDefault = () => {
+                              const current = configuredDefault()
+                              return current?.providerID === key.providerID && current.modelID === key.modelID
+                            }
                             return (
                               <SettingsRowV2 title={item.name} description="">
-                                <div>
+                                <div class="flex items-center gap-2">
+                                  <ButtonV2
+                                    size="small"
+                                    variant={isDefault() ? "neutral" : "ghost-muted"}
+                                    disabled={isDefault() || pendingDefault() !== undefined}
+                                    onClick={() => void setDefault(key)}
+                                  >
+                                    {language.t(
+                                      isDefault() ? "settings.models.default" : "settings.models.setDefault",
+                                    )}
+                                  </ButtonV2>
                                   <Switch
                                     checked={models.visible(key)}
                                     onChange={(checked) => {

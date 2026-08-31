@@ -449,13 +449,21 @@ https://github.com/yiyaxy/opencode
 - 待办：审核并合并 Fork 内部 PR [#1](https://github.com/yiyaxy/opencode/pull/1) 到 `dev`。
 - 待办：开启分支保护、Dependabot、Secret Scanning 和必要的代码扫描。
 
+### 10.8 M1 模型共享边界
+
+- 默认模型写入服务器全局配置的 `model` 字段，格式为 `provider/model`。
+- Desktop、Web 和 CLI 连接同一个服务器时，都从该服务器的全局配置读取默认模型；模型凭据仍由服务器自身的认证存储管理，不写入浏览器本地存储或仓库。
+- 会话中临时选择模型的行为保持不变，不会因为设置服务器默认模型而覆盖已有会话模型。
+- Web 如果连接的是另一个本地服务进程，不会自动读取 Desktop 进程的内存状态；必须在 Web 的服务器设置中连接同一个服务地址，才能共享默认模型和 Provider 配置。
+- 当前已在模型设置页增加“设为默认/默认”操作，覆盖旧版和新版设置界面；功能分支为 `model-sharing`，待 PR #1 合并到 `dev` 后再提交合并请求。
+
 ## 11. 当前实施状态
 
 | 项目 | 状态 | 说明 |
 | --- | --- | --- |
 | 产品路线 A → B → C | 已确认 | 一个产品分层递进，不同时拼装三个产品 |
 | Git 清理前基线 | 已完成 | 基线提交：`ac7c164` |
-| 工作分支 | 已完成 | 当前分支：`upstream-sync`；`fork-migration` 保留为已推送迁移分支，`internal-cleanup` 保留为本地备份 |
+| 工作分支 | 进行中 | 当前功能分支：`model-sharing`；`upstream-sync` 保留为 PR #1 分支；`fork-migration` 保留为已推送迁移分支，`internal-cleanup` 保留为本地备份 |
 | Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；迁移分支已推送，尚未覆盖 Fork `dev` |
 | 三语言清理 | 已完成 | 迁移提交：`68819552`，删除 766 个无关语言文件 |
 | 静态校验 | 已通过 | 已完成差异、语言目录、配置和相关语法检查 |
@@ -464,7 +472,7 @@ https://github.com/yiyaxy/opencode
 | 模块复用审计 | 已完成 | 清单见 [module-audit.md](./module-audit.md)，暂无新增目录级删除项 |
 | 外部端点审计 | 已完成 | 清单见 [external-endpoints.md](./external-endpoints.md)，未修改生产端点或敏感配置 |
 | 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，同步分支已推送，Fork 内部 PR #1 已创建，待合并到 `dev` |
-| A 层内部化 | 计划中 | 外部端点、品牌、模型网关、安装更新待处理 |
+| A 层内部化 | 进行中 | 已实现服务器默认模型设置；外部端点、品牌、模型网关、安装更新待处理 |
 | A 层生产加固 | 计划中 | 沙箱、SSO、审计、恢复和评测待建设 |
 | B 层复杂任务 | 规划中 | 等 A 层达到发布门槛后实施 |
 | C 层通用平台 | 方向确认 | 等 B 层稳定并选定真实业务试点后实施 |
@@ -481,8 +489,9 @@ https://github.com/yiyaxy/opencode
 ## 13. 下一步
 
 1. 审核并通过 PR #1 将已推送的 `upstream-sync` 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
-2. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，复核已记录的既有测试失败。
-3. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
-4. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
-5. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
-6. 进入 M1，先交付 Desktop/Web/CLI 共用模型配置和完整、可靠、安全的内部编程助手闭环。
+2. 将 `model-sharing` 基于最新 `dev` 重新整理后提交合并请求，合并已实现的服务器默认模型设置。
+3. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，复核已记录的既有测试失败。
+4. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
+5. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
+6. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
+7. 继续 M1，完善同一服务器连接向导、模型网关策略和完整、可靠、安全的内部编程助手闭环。

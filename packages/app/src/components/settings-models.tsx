@@ -3,11 +3,14 @@ import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { Switch } from "@opencode-ai/ui/switch"
 import { Icon } from "@opencode-ai/ui/icon"
 import { IconButton } from "@opencode-ai/ui/icon-button"
+import { Button } from "@opencode-ai/ui/button"
 import { TextField } from "@opencode-ai/ui/text-field"
-import { type Component, For, Show } from "solid-js"
+import { createSignal, type Component, For, Show } from "solid-js"
 import { useLanguage } from "@/context/language"
 import { useModels } from "@/context/models"
+import { useServerSync } from "@/context/server-sync"
 import { popularProviders } from "@/hooks/use-providers"
+import { showToast } from "@/utils/toast"
 import { SettingsList } from "./settings-list"
 import { SettingsServerPicker, SettingsServerScope } from "./settings-server-picker"
 
@@ -43,6 +46,43 @@ export const SettingsModels: Component = () => {
 const SettingsModelsContent: Component = () => {
   const language = useLanguage()
   const models = useModels()
+  const serverSync = useServerSync()
+  const [pendingDefault, setPendingDefault] = createSignal<string>()
+
+  const configuredDefault = () => {
+    const value = serverSync().data.config.model
+    if (!value) return undefined
+    const separator = value.indexOf("/")
+    if (separator <= 0 || separator === value.length - 1) return undefined
+    return { providerID: value.slice(0, separator), modelID: value.slice(separator + 1) }
+  }
+
+  const modelKey = (model: { providerID: string; modelID: string }) => `${model.providerID}:${model.modelID}`
+
+  const setDefault = async (model: { providerID: string; modelID: string }) => {
+    const next = `${model.providerID}/${model.modelID}`
+    const before = serverSync().data.config.model
+    if (before === next) return
+
+    setPendingDefault(modelKey(model))
+    serverSync().set("config", "model", next)
+    try {
+      await serverSync().updateConfig({ model: next })
+      showToast({
+        variant: "success",
+        icon: "circle-check",
+        title: language.t("settings.models.defaultUpdated"),
+      })
+    } catch (error) {
+      serverSync().set("config", "model", before)
+      showToast({
+        title: language.t("settings.models.defaultUpdateFailed"),
+        description: error instanceof Error ? error.message : String(error),
+      })
+    } finally {
+      setPendingDefault(undefined)
+    }
+  }
 
   const list = useFilteredList<ModelItem>({
     items: (_filter) => models.list(),
@@ -117,12 +157,24 @@ const SettingsModelsContent: Component = () => {
                     <For each={group.items}>
                       {(item) => {
                         const key = { providerID: item.provider.id, modelID: item.id }
+                        const isDefault = () => {
+                          const current = configuredDefault()
+                          return current?.providerID === key.providerID && current.modelID === key.modelID
+                        }
                         return (
                           <div class="flex flex-wrap items-center justify-between gap-4 py-3 border-b border-border-weak-base last:border-none">
                             <div class="min-w-0">
                               <span class="text-14-regular text-text-strong truncate block">{item.name}</span>
                             </div>
-                            <div class="flex-shrink-0">
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                              <Button
+                                size="small"
+                                variant={isDefault() ? "secondary" : "ghost"}
+                                disabled={isDefault() || pendingDefault() !== undefined}
+                                onClick={() => void setDefault(key)}
+                              >
+                                {language.t(isDefault() ? "settings.models.default" : "settings.models.setDefault")}
+                              </Button>
                               <Switch
                                 checked={models.visible(key)}
                                 onChange={(checked) => {
