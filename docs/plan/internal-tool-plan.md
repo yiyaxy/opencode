@@ -405,7 +405,7 @@ https://github.com/yiyaxy/opencode
 6. 在迁移分支完成类型检查、既有测试、构建和静态安全检查。
 7. 通过 PR 合并到 Fork 的 `dev`，再设置 `dev` 为默认分支。
 
-当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。同步分支已推送至 Fork，且当前分支与 `origin/upstream-sync` 一致；待通过 PR 合并到 Fork 的 `dev`。
+当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。同步分支已推送至 Fork，且当前分支与 `origin/upstream-sync` 一致；Fork 内部 PR [#1](https://github.com/yiyaxy/opencode/pull/1) 已创建，目标为 `yiyaxy/opencode:dev`，GitHub 检查正在运行。
 
 迁移会产生新的提交哈希；以共同上游基点、文件内容和可审查的逻辑提交为准，不强行保留当前临时提交哈希。
 
@@ -446,7 +446,7 @@ https://github.com/yiyaxy/opencode
 - 已完成：当前语言清理和产品 Plan 已迁移到标准 Fork 历史。
 - 已完成：`upstream-sync` 已同步上游 `dev`，并保留三语言删除策略。
 - 已完成：`upstream-sync` 已推送到 Fork，推送地址为 `origin/upstream-sync`。
-- 待办：通过 PR 合并到 Fork 的 `dev`（可使用 GitHub 提供的 [创建 PR 链接](https://github.com/yiyaxy/opencode/pull/new/upstream-sync)）。
+- 待办：审核并合并 Fork 内部 PR [#1](https://github.com/yiyaxy/opencode/pull/1) 到 `dev`。
 - 待办：开启分支保护、Dependabot、Secret Scanning 和必要的代码扫描。
 
 ## 11. 当前实施状态
@@ -463,7 +463,7 @@ https://github.com/yiyaxy/opencode
 | Desktop 开发构建 | 已通过 | `bun run build` 已通过；开发渠道优先使用本地/源码 CLI，避免下载未发布的 `0.0.0-next-16350` |
 | 模块复用审计 | 已完成 | 清单见 [module-audit.md](./module-audit.md)，暂无新增目录级删除项 |
 | 外部端点审计 | 已完成 | 清单见 [external-endpoints.md](./external-endpoints.md)，未修改生产端点或敏感配置 |
-| 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，同步分支已推送，待 PR 合并到 Fork `dev` |
+| 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，同步分支已推送，Fork 内部 PR #1 已创建，待合并到 `dev` |
 | A 层内部化 | 计划中 | 外部端点、品牌、模型网关、安装更新待处理 |
 | A 层生产加固 | 计划中 | 沙箱、SSO、审计、恢复和评测待建设 |
 | B 层复杂任务 | 规划中 | 等 A 层达到发布门槛后实施 |
@@ -480,7 +480,7 @@ https://github.com/yiyaxy/opencode
 
 ## 13. 下一步
 
-1. 通过 PR 将已推送的 `upstream-sync` 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
+1. 审核并通过 PR #1 将已推送的 `upstream-sync` 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
 2. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，复核已记录的既有测试失败。
 3. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
 4. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
