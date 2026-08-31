@@ -405,7 +405,7 @@ https://github.com/yiyaxy/opencode
 6. 在迁移分支完成类型检查、既有测试、构建和静态安全检查。
 7. 通过 PR 合并到 Fork 的 `dev`，再设置 `dev` 为默认分支。
 
-当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。
+当前同步记录：`upstream-sync` 已从 `fork-migration` 合并 `upstream/dev`，合并提交为 `b58fb5c21`；60 个语言文件冲突均按既定删除策略解决。Desktop 开发构建已改为优先使用 `OPENCODE_DESKTOP_CLI_PATH` 或当前源码构建的 CLI，不再依赖未发布的上游 CLI 版本。同步分支已推送至 Fork，最新计划提交为 `ab6d1b0e1`；待通过 PR 合并到 Fork 的 `dev`。
 
 迁移会产生新的提交哈希；以共同上游基点、文件内容和可审查的逻辑提交为准，不强行保留当前临时提交哈希。
 
@@ -445,7 +445,8 @@ https://github.com/yiyaxy/opencode
 - 已完成：基于 Fork `dev` 的 `fork-migration` 已推送。
 - 已完成：当前语言清理和产品 Plan 已迁移到标准 Fork 历史。
 - 已完成：`upstream-sync` 已同步上游 `dev`，并保留三语言删除策略。
-- 待办：推送 `upstream-sync` 并通过 PR 合并到 Fork 的 `dev`。
+- 已完成：`upstream-sync` 已推送到 Fork，推送地址为 `origin/upstream-sync`。
+- 待办：通过 PR 合并到 Fork 的 `dev`（可使用 GitHub 提供的 [创建 PR 链接](https://github.com/yiyaxy/opencode/pull/new/upstream-sync)）。
 - 待办：开启分支保护、Dependabot、Secret Scanning 和必要的代码扫描。
 
 ## 11. 当前实施状态
@@ -458,11 +459,11 @@ https://github.com/yiyaxy/opencode
 | Fork 与远程 | 已完成 | `origin` 指向 `https://github.com/yiyaxy/opencode.git`；迁移分支已推送，尚未覆盖 Fork `dev` |
 | 三语言清理 | 已完成 | 迁移提交：`68819552`，删除 766 个无关语言文件 |
 | 静态校验 | 已通过 | 已完成差异、语言目录、配置和相关语法检查 |
-| Bun 类型检查、构建和测试 | 部分完成 | 上游同步后根级 `bun typecheck`（30/30 任务）、13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建均通过；Bun 仍为 1.4.0、项目声明 1.3.14；未新增或运行测试 |
+| Bun 类型检查、构建和测试 | 部分完成 | 上游同步后根级 `bun typecheck`（30/30 任务）、13 个基础包类型检查、App/服务端构建和当前平台 CLI/单体构建均通过；核心包既有测试 1096 项通过；`packages/opencode` 3391 项通过、22 项跳过、1 项 todo、4 项失败（SSE 超时测试时序、本机 npm 镜像）；未新增测试。Bun 仍为 1.4.0、项目声明 1.3.14 |
 | Desktop 开发构建 | 已通过 | `bun run build` 已通过；开发渠道优先使用本地/源码 CLI，避免下载未发布的 `0.0.0-next-16350` |
 | 模块复用审计 | 已完成 | 清单见 [module-audit.md](./module-audit.md)，暂无新增目录级删除项 |
 | 外部端点审计 | 已完成 | 清单见 [external-endpoints.md](./external-endpoints.md)，未修改生产端点或敏感配置 |
-| 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，待推送同步分支 |
+| 上游同步 | 已完成 | `upstream/dev` 当前为 `10765ff2`；本地已解决 60 个语言文件 modify/delete 冲突，同步分支已推送，待 PR 合并到 Fork `dev` |
 | A 层内部化 | 计划中 | 外部端点、品牌、模型网关、安装更新待处理 |
 | A 层生产加固 | 计划中 | 沙箱、SSO、审计、恢复和评测待建设 |
 | B 层复杂任务 | 规划中 | 等 A 层达到发布门槛后实施 |
@@ -479,8 +480,8 @@ https://github.com/yiyaxy/opencode
 
 ## 13. 下一步
 
-1. 推送 `upstream-sync`，通过 PR 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
-2. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，并补跑既有核心测试基线。
+1. 通过 PR 将已推送的 `upstream-sync` 合并到 Fork 的 `dev`，并保留 `internal-cleanup` 作为迁移备份。
+2. 锁定 Bun 1.3.14 或确认公司统一使用的兼容版本，复核已记录的既有测试失败。
 3. 确认内部品牌、包名、应用 ID、数据目录、安装源和更新通道。
 4. 确认公司模型网关、允许的 Provider、模型目录同步方式和离线缓存策略。
 5. 按 [external-endpoints.md](./external-endpoints.md) 逐项制定端点替换或禁用变更，先处理模型、安装更新、分享和公共 Referer。
