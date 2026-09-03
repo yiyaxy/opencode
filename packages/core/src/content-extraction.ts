@@ -1,17 +1,31 @@
 export * as ContentExtraction from "./content-extraction"
 
-import { Chunk, FailureClass } from "@opencode-ai/schema/content-extraction"
+import { ContentExtraction } from "@opencode-ai/schema/content-extraction"
 
-const DEFAULT_TARGET_TOKENS = 6_000
-const DEFAULT_MAX_TOKENS = 8_000
-const DEFAULT_OVERLAP_TOKENS = 300
+const INTERACTIVE_TARGET_TOKENS = 3_000
+const INTERACTIVE_MAX_TOKENS = 4_000
+const INTERACTIVE_OVERLAP_TOKENS = 160
+const BULK_TARGET_TOKENS = 6_000
+const BULK_MAX_TOKENS = 8_000
+const BULK_OVERLAP_TOKENS = 300
+const BULK_THRESHOLD_TOKENS = 12_000
 const UNITS_PER_TOKEN = 4
 
+export type SplitProfile = "auto" | "interactive" | "bulk"
+
 export type SplitOptions = {
+  readonly profile?: SplitProfile
   readonly targetTokens?: number
   readonly maxTokens?: number
   readonly overlapTokens?: number
   readonly jobID?: string
+}
+
+export type SplitStrategy = {
+  readonly profile: Exclude<SplitProfile, "auto">
+  readonly targetTokens: number
+  readonly maxTokens: number
+  readonly overlapTokens: number
 }
 
 export type Normalized = {
@@ -29,7 +43,7 @@ export type FailureInput = {
 }
 
 export type FailureDecision = {
-  readonly classification: typeof FailureClass.Type
+  readonly classification: typeof ContentExtraction.FailureClass.Type
   readonly retryable: boolean
   readonly preservePartial: boolean
   readonly action: "retry" | "split" | "format-repair" | "stop"
@@ -103,6 +117,10 @@ export function classifyFailure(input: FailureInput): FailureDecision {
   return { classification: "unknown", retryable: false, preservePartial, action: "stop" }
 }
 
+export function strategy(input: string, options: SplitOptions = {}): SplitStrategy {
+  return resolveStrategy(estimateTokens(normalize(input).text), options)
+}
+
 export function split(input: string, options: SplitOptions = {}) {
   const normalized = normalize(input)
   if (normalized.text.length === 0) return []
@@ -110,15 +128,13 @@ export function split(input: string, options: SplitOptions = {}) {
   const points = buildPoints(normalized.text)
   const prefix = buildPrefix(points)
   const boundaries = buildBoundaries(points)
-  const targetTokens = positive(options.targetTokens, DEFAULT_TARGET_TOKENS)
-  const maxTokens = Math.max(targetTokens, positive(options.maxTokens, DEFAULT_MAX_TOKENS))
-  const overlapTokens = Math.min(Math.max(0, options.overlapTokens ?? DEFAULT_OVERLAP_TOKENS), targetTokens - 1)
-  const targetUnits = targetTokens * UNITS_PER_TOKEN
-  const maxUnits = maxTokens * UNITS_PER_TOKEN
-  const overlapUnits = overlapTokens * UNITS_PER_TOKEN
+  const config = resolveStrategy(normalized.estimatedTokens, options)
+  const targetUnits = config.targetTokens * UNITS_PER_TOKEN
+  const maxUnits = config.maxTokens * UNITS_PER_TOKEN
+  const overlapUnits = config.overlapTokens * UNITS_PER_TOKEN
   const minimumBoundaryUnits = Math.max(UNITS_PER_TOKEN, Math.floor(targetUnits / 4))
 
-  const chunks: Array<Omit<typeof Chunk.Type, "index" | "total" | "status" | "attempt">> = []
+  const chunks: Array<Omit<ContentExtraction.Chunk, "index" | "total" | "status" | "attempt">> = []
   let sourceStart = 0
 
   while (sourceStart < points.length) {
@@ -154,6 +170,34 @@ export function split(input: string, options: SplitOptions = {}) {
     status: "pending" as const,
     attempt: 0,
   }))
+}
+
+function resolveStrategy(estimatedTokens: number, options: SplitOptions): SplitStrategy {
+  const profile =
+    options.profile === "interactive" || options.profile === "bulk"
+      ? options.profile
+      : estimatedTokens > BULK_THRESHOLD_TOKENS
+        ? "bulk"
+        : "interactive"
+  const defaults =
+    profile === "interactive"
+      ? {
+          targetTokens: INTERACTIVE_TARGET_TOKENS,
+          maxTokens: INTERACTIVE_MAX_TOKENS,
+          overlapTokens: INTERACTIVE_OVERLAP_TOKENS,
+        }
+      : {
+          targetTokens: BULK_TARGET_TOKENS,
+          maxTokens: BULK_MAX_TOKENS,
+          overlapTokens: BULK_OVERLAP_TOKENS,
+        }
+  const targetTokens = positive(options.targetTokens, defaults.targetTokens)
+  return {
+    profile,
+    targetTokens,
+    maxTokens: Math.max(targetTokens, positive(options.maxTokens, defaults.maxTokens)),
+    overlapTokens: Math.min(Math.max(0, options.overlapTokens ?? defaults.overlapTokens), targetTokens - 1),
+  }
 }
 
 function positive(value: number | undefined, fallback: number) {
