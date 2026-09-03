@@ -188,6 +188,8 @@ const layer = Layer.effect(
         .pipe(Effect.orDie)
     })
 
+    yield* recoverRunning()
+
     return Service.of({ create, get, source, chunks, results, saveChunk, saveResult, recoverRunning })
   }),
 )
