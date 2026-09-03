@@ -48,10 +48,18 @@ function message(providerID: ProviderV2.ID, e: APICallError) {
     try {
       const body = JSON.parse(e.responseBody)
       // try to extract common error message fields
-      const errMsg = body.message || body.error || body.error?.message
+      const errMsg =
+        typeof body.message === "string"
+          ? body.message
+          : typeof body.error === "string"
+            ? body.error
+            : typeof body.error?.message === "string"
+              ? body.error.message
+              : undefined
       if (errMsg && typeof errMsg === "string") {
         return `${msg}: ${errMsg}`
       }
+      if (typeof body.error?.code === "string") return `${msg}: ${body.error.code}`
     } catch {}
 
     // If responseBody is HTML (e.g. from a gateway or proxy error page),
@@ -97,6 +105,7 @@ export type ParsedStreamError =
       message: string
       isRetryable: boolean
       responseBody: string
+      metadata?: Record<string, string>
     }
 
 export function parseStreamError(input: unknown): ParsedStreamError | undefined {
@@ -105,7 +114,25 @@ export function parseStreamError(input: unknown): ParsedStreamError | undefined 
   if (!body) return
 
   const responseBody = JSON.stringify(body)
-  if (body.type !== "error") return
+  if (body.type !== undefined && body.type !== "error") return
+  if (!body.error || typeof body.error !== "object") return
+
+  if (body.error?.code === "content_generation_failed") {
+    return {
+      type: "api_error",
+      message:
+        typeof body.error.message === "string"
+          ? body.error.message
+          : "Content generation was interrupted during extraction.",
+      isRetryable: true,
+      responseBody,
+      metadata: {
+        code: "content_generation_failed",
+        ...(typeof body.error.phase === "string" ? { phase: body.error.phase } : {}),
+        ...(typeof body.error.partial === "boolean" ? { partial: String(body.error.partial) } : {}),
+      },
+    }
+  }
 
   switch (body?.error?.code) {
     case "context_length_exceeded":
@@ -172,7 +199,15 @@ export type ParsedAPICallError =
 export function parseAPICallError(input: { providerID: ProviderV2.ID; error: APICallError }): ParsedAPICallError {
   const m = message(input.providerID, input.error)
   const body = json(input.error.responseBody)
-  if (isContextOverflow(m) || input.error.statusCode === 413 || body?.error?.code === "context_length_exceeded") {
+  const detail = body?.error && typeof body.error === "object" ? body.error : body
+  const code = detail && typeof detail.code === "string" ? detail.code : undefined
+  const metadata = {
+    ...(input.error.url ? { url: input.error.url } : {}),
+    ...(code ? { code } : {}),
+    ...(detail && typeof detail.phase === "string" ? { phase: detail.phase } : {}),
+    ...(detail && typeof detail.partial === "boolean" ? { partial: String(detail.partial) } : {}),
+  }
+  if (isContextOverflow(m) || input.error.statusCode === 413 || code === "context_length_exceeded") {
     return {
       type: "context_overflow",
       message: m,
@@ -180,15 +215,19 @@ export function parseAPICallError(input: { providerID: ProviderV2.ID; error: API
     }
   }
 
-  const metadata = input.error.url ? { url: input.error.url } : undefined
   return {
     type: "api_error",
     message: m,
     statusCode: input.error.statusCode,
-    isRetryable: input.providerID.startsWith("openai") ? isOpenAiErrorRetryable(input.error) : input.error.isRetryable,
+    isRetryable:
+      code === "content_generation_failed"
+        ? true
+        : input.providerID.startsWith("openai")
+          ? isOpenAiErrorRetryable(input.error)
+          : input.error.isRetryable,
     responseHeaders: input.error.responseHeaders,
     responseBody: input.error.responseBody,
-    metadata,
+    metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
   }
 }
 

@@ -722,6 +722,7 @@ export function fromError(
               message: parsed.message,
               isRetryable: parsed.isRetryable,
               responseBody: parsed.responseBody,
+              metadata: parsed.metadata,
             },
             {
               cause: e,
