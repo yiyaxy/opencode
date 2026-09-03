@@ -1,5 +1,6 @@
 export { Agent } from "./agent"
 export { Command } from "./command"
+export { ContentExtraction } from "./content-extraction"
 export { Connection } from "./connection"
 export { Credential } from "./credential"
 export { Event } from "./event"
